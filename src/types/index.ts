@@ -1,5 +1,24 @@
 export type ChatSender = 'user' | 'agent'
 
+export enum UserRole {
+  Admin = 'admin',
+  Manager = 'manager',
+}
+
+export interface UserSeedEntry {
+  username: string
+  password: string
+  role: UserRole
+}
+
+export interface IUser {
+  username: string
+  passwordHash: string
+  role: UserRole
+  createdAt?: Date
+  updatedAt?: Date
+}
+
 export interface IChatMessage {
   sessionId: string
   sender: ChatSender
@@ -27,6 +46,30 @@ export interface ChatMessageDTO {
   sender: ChatSender
   text: string
   createdAt: string
+}
+
+export interface ConversationListItem {
+  sessionId: string
+  guestName: string
+  guestEmail: string
+  status: 'open' | 'closed'
+  updatedAt: string
+  lastMessage?: {
+    text: string
+    sender: ChatSender
+    createdAt: string
+  }
+}
+
+export interface PaginatedList<T> {
+  items: T[]
+  total: number
+  hasMore: boolean
+}
+
+export interface MessagesPageResult {
+  messages: ChatMessageDTO[]
+  hasMore: boolean
 }
 
 export type CoffeeWeight = 250 | 500 | 1000

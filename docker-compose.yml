@@ -26,7 +26,8 @@ services:
       PORT: 3001
       MONGO_URI: mongodb://mongodb:27017/coffee_cherry
       NODE_ENV: production
-      CORS_ORIGIN: http://localhost:3000
+      CORS_ORIGIN: http://localhost:3000,http://localhost:3002
+      JWT_SECRET: ${JWT_SECRET:-coffee-cherry-dev-secret}
       SUPPORT_AGENT_TOKEN: ${SUPPORT_AGENT_TOKEN:-}
     depends_on:
       mongodb:

@@ -3,6 +3,7 @@ import express from 'express'
 import cors from 'cors'
 import morgan from 'morgan'
 import { env } from './config/env'
+import { resolveCorsOrigin } from './config/cors'
 import { connectDatabase } from './config/database'
 import routes from './routes'
 import { errorHandler, notFoundHandler } from './middleware/errorHandler'
@@ -13,7 +14,7 @@ async function bootstrap(): Promise<void> {
 
   const app = express()
 
-  app.use(cors({ origin: env.corsOrigin === '*' ? true : env.corsOrigin }))
+  app.use(cors({ origin: resolveCorsOrigin() }))
   app.use(express.json())
   app.use(morgan(env.nodeEnv === 'production' ? 'combined' : 'dev'))
 

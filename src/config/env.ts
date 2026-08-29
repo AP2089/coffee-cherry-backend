@@ -8,4 +8,5 @@ export const env = {
   nodeEnv: process.env.NODE_ENV || 'development',
   corsOrigin: process.env.CORS_ORIGIN || '*',
   supportAgentToken: process.env.SUPPORT_AGENT_TOKEN || '',
+  jwtSecret: process.env.JWT_SECRET || 'coffee-cherry-dev-secret',
 } as const

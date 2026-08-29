@@ -1,6 +1,8 @@
 import { connectDatabase } from '../config/database'
 import { Coffee } from '../models/Coffee'
+import { User, hashPassword } from '../models/User'
 import { coffeesSeed } from './data'
+import { usersSeed } from './users'
 
 async function seed(): Promise<void> {
   await connectDatabase()
@@ -14,10 +16,29 @@ async function seed(): Promise<void> {
       { upsert: true, new: true, setDefaultsOnInsert: true },
     )
     upserted += 1
-    console.log(`[seed] upserted: ${coffee.slug}`)
+    console.log(`[seed] upserted coffee: ${coffee.slug}`)
   }
 
   console.log(`[seed] done — ${upserted} coffees`)
+
+  let usersUpserted = 0
+
+  for (const user of usersSeed) {
+    await User.findOneAndUpdate(
+      { username: user.username },
+      {
+        $set: {
+          passwordHash: hashPassword(user.password),
+          role: user.role,
+        },
+      },
+      { upsert: true, new: true, setDefaultsOnInsert: true },
+    )
+    usersUpserted += 1
+    console.log(`[seed] upserted user: ${user.username} (${user.role})`)
+  }
+
+  console.log(`[seed] done — ${usersUpserted} users`)
   process.exit(0)
 }
 

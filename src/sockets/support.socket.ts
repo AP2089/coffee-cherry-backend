@@ -1,17 +1,35 @@
 import type { Server as HttpServer } from 'http'
 import { Server } from 'socket.io'
 import { env } from '../config/env'
+import { resolveCorsOrigin } from '../config/cors'
 import * as chatService from '../services/chat.service'
+import { UserRole } from '../types'
+import { verifyAuthToken } from '../utils/jwt'
 
-function resolveCorsOrigin(): string | string[] | boolean {
-  if (env.corsOrigin === '*') return true
-  return env.corsOrigin.split(',').map((origin) => origin.trim())
+function resolveSocketCorsOrigin(): string | string[] | boolean {
+  const origin = resolveCorsOrigin()
+  return origin
+}
+
+function resolveAgentAuth(token?: string): { username: string; role: UserRole } | null {
+  if (!token) return null
+
+  if (env.supportAgentToken && token === env.supportAgentToken) {
+    return { username: 'agent', role: UserRole.Manager }
+  }
+
+  try {
+    const payload = verifyAuthToken(token)
+    return { username: payload.username, role: payload.role }
+  } catch {
+    return null
+  }
 }
 
 export function initSupportSocket(httpServer: HttpServer): Server {
   const io = new Server(httpServer, {
     cors: {
-      origin: resolveCorsOrigin(),
+      origin: resolveSocketCorsOrigin(),
       methods: ['GET', 'POST'],
     },
     path: '/socket.io',
@@ -49,8 +67,11 @@ export function initSupportSocket(httpServer: HttpServer): Server {
             locale,
           )
 
+          const page = await chatService.getMessagesPage(sessionId, { limit: 20 })
+
           socket.emit('support:history', {
-            messages: result.messages,
+            messages: page.messages,
+            hasMore: page.hasMore,
             guestName: result.guestName,
             guestEmail: result.guestEmail,
           })
@@ -61,6 +82,30 @@ export function initSupportSocket(httpServer: HttpServer): Server {
         }
       },
     )
+
+    socket.on('support:load-more', async (payload: { before?: string }) => {
+      const sessionId = socket.data.sessionId as string | undefined
+
+      if (!sessionId || socket.data.role !== 'user') {
+        socket.emit('support:error', { message: 'Not joined to chat' })
+        return
+      }
+
+      try {
+        const page = await chatService.getMessagesPage(sessionId, {
+          limit: 20,
+          before: typeof payload?.before === 'string' ? payload.before : undefined,
+        })
+
+        socket.emit('support:history-page', {
+          messages: page.messages,
+          hasMore: page.hasMore,
+        })
+      } catch (error) {
+        console.error('[socket] support:load-more failed', error)
+        socket.emit('support:error', { message: 'Failed to load messages' })
+      }
+    })
 
     socket.on('support:message', async (payload: { text?: string }) => {
       const sessionId = socket.data.sessionId as string | undefined
@@ -88,14 +133,60 @@ export function initSupportSocket(httpServer: HttpServer): Server {
     })
 
     socket.on('support:agent:join', (payload: { token?: string }) => {
-      if (!env.supportAgentToken || payload?.token !== env.supportAgentToken) {
+      const agent = resolveAgentAuth(payload?.token)
+
+      if (!agent) {
         socket.emit('support:error', { message: 'Unauthorized agent' })
         return
       }
 
       socket.data.role = 'agent'
+      socket.data.username = agent.username
       void socket.join('support-agents')
-      socket.emit('support:agent:joined')
+      socket.emit('support:agent:joined', agent)
+    })
+
+    socket.on('support:agent:select', async (payload: { sessionId?: string }) => {
+      if (socket.data.role !== 'agent') {
+        socket.emit('support:error', { message: 'Unauthorized agent' })
+        return
+      }
+
+      const sessionId = payload?.sessionId?.trim()
+
+      if (!sessionId) {
+        socket.emit('support:error', { message: 'sessionId is required' })
+        return
+      }
+
+      try {
+        const meta = await chatService.getConversationMeta(sessionId)
+
+        if (!meta) {
+          socket.emit('support:error', { message: 'Conversation not found' })
+          return
+        }
+
+        for (const room of socket.rooms) {
+          if (room !== socket.id && room !== 'support-agents') {
+            void socket.leave(room)
+          }
+        }
+
+        await socket.join(sessionId)
+
+        const messages = await chatService.getMessagesPage(sessionId, { limit: 20 })
+
+        socket.emit('support:agent:history', {
+          sessionId,
+          meta,
+          messages: messages.messages,
+          hasMore: messages.hasMore,
+        })
+      } catch (error) {
+        console.error('[socket] support:agent:select failed', error)
+        socket.emit('support:error', { message: 'Failed to load conversation' })
+      }
     })
 
     socket.on('support:agent:reply', async (payload: { sessionId?: string; text?: string }) => {
@@ -115,6 +206,7 @@ export function initSupportSocket(httpServer: HttpServer): Server {
       try {
         const message = await chatService.createMessage(sessionId, 'agent', text)
         io.to(sessionId).emit('support:message', { message })
+        io.to('support-agents').emit('support:message', { message })
       } catch (error) {
         console.error('[socket] support:agent:reply failed', error)
         socket.emit('support:error', { message: 'Failed to send reply' })
