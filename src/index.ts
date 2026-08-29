@@ -1,3 +1,4 @@
+import { createServer } from 'http'
 import express from 'express'
 import cors from 'cors'
 import morgan from 'morgan'
@@ -5,6 +6,7 @@ import { env } from './config/env'
 import { connectDatabase } from './config/database'
 import routes from './routes'
 import { errorHandler, notFoundHandler } from './middleware/errorHandler'
+import { initSupportSocket } from './sockets/support.socket'
 
 async function bootstrap(): Promise<void> {
   await connectDatabase()
@@ -23,7 +25,10 @@ async function bootstrap(): Promise<void> {
   app.use(notFoundHandler)
   app.use(errorHandler)
 
-  app.listen(env.port, '0.0.0.0', () => {
+  const httpServer = createServer(app)
+  initSupportSocket(httpServer)
+
+  httpServer.listen(env.port, '0.0.0.0', () => {
     console.log(`[backend] listening on 0.0.0.0:${env.port}`)
   })
 }

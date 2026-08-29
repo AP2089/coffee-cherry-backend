@@ -7,4 +7,5 @@ export const env = {
   mongoUri: process.env.MONGO_URI || 'mongodb://localhost:27017/coffee_cherry',
   nodeEnv: process.env.NODE_ENV || 'development',
   corsOrigin: process.env.CORS_ORIGIN || '*',
+  supportAgentToken: process.env.SUPPORT_AGENT_TOKEN || '',
 } as const

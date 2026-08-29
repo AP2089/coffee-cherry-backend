@@ -1,3 +1,34 @@
+export type ChatSender = 'user' | 'agent'
+
+export interface IChatMessage {
+  sessionId: string
+  sender: ChatSender
+  text: string
+  createdAt?: Date
+}
+
+export interface IConversation {
+  sessionId: string
+  guestName?: string
+  guestEmail?: string
+  status: 'open' | 'closed'
+  createdAt?: Date
+  updatedAt?: Date
+}
+
+export interface ChatGuestProfile {
+  guestName: string
+  guestEmail: string
+}
+
+export interface ChatMessageDTO {
+  id: string
+  sessionId: string
+  sender: ChatSender
+  text: string
+  createdAt: string
+}
+
 export type CoffeeWeight = 250 | 500 | 1000
 
 export interface ICoffee {
