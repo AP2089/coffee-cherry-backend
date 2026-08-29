@@ -1,32 +1,15 @@
 import { createServer } from 'http'
-import express from 'express'
-import cors from 'cors'
-import morgan from 'morgan'
-import { env } from './config/env'
-import { resolveCorsOrigin } from './config/cors'
 import { connectDatabase } from './config/database'
-import routes from './routes'
-import { errorHandler, notFoundHandler } from './middleware/errorHandler'
+import { env } from './config/env'
+import { createApp } from './app'
 import { initSupportSocket } from './sockets/support.socket'
 
 async function bootstrap(): Promise<void> {
   await connectDatabase()
 
-  const app = express()
-
-  app.use(cors({ origin: resolveCorsOrigin() }))
-  app.use(express.json())
-  app.use(morgan(env.nodeEnv === 'production' ? 'combined' : 'dev'))
-
-  app.get('/', (_req, res) => {
-    res.json({ name: 'coffee cherry api', version: '1.0.0' })
-  })
-
-  app.use('/api', routes)
-  app.use(notFoundHandler)
-  app.use(errorHandler)
-
+  const app = createApp()
   const httpServer = createServer(app)
+
   initSupportSocket(httpServer)
 
   httpServer.listen(env.port, '0.0.0.0', () => {
