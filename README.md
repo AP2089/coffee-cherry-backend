@@ -23,8 +23,6 @@ Health: http://localhost:3001/api/health
 Нужен MongoDB и Node.js ≥ 20.
 
 ```bash
-cp .env.example .env
-# для локальной Mongo: MONGO_URI=mongodb://127.0.0.1:27017/coffee_cherry
 npm install
 npm run seed:dev
 npm run dev
@@ -32,12 +30,18 @@ npm run dev
 
 ## Переменные окружения
 
-| Переменная    | Описание                       |
-| ------------- | ------------------------------ |
-| `PORT`        | Порт API (по умолчанию `3001`) |
-| `MONGO_URI`   | Строка подключения MongoDB     |
-| `NODE_ENV`    | `production` / `development`   |
-| `CORS_ORIGIN` | Разрешённый origin фронтенда   |
+Файл `.env` в корне проекта.
+
+| Переменная            | Описание                                                                     |
+| --------------------- | ---------------------------------------------------------------------------- |
+| `PORT`                | Порт HTTP-сервера API (по умолчанию `3001`)                                  |
+| `MONGO_URI`           | Строка подключения к MongoDB                                                 |
+| `NODE_ENV`            | Режим работы: `development` или `production`                                 |
+| `CORS_ORIGIN`         | Разрешённые origins фронтенда, CRM и helpdesk (через запятую)                |
+| `CORS_RELAXED_LOCAL`  | Разрешить локальные origins (`localhost`, `127.0.0.1`) при `true`            |
+| `JWT_SECRET`          | Секрет для подписи JWT-токенов авторизации                                   |
+| `SUPPORT_AGENT_TOKEN` | Токен для подключения операторов helpdesk к Socket.IO (пусто — без проверки) |
+| `UPLOADS_DIR`         | Путь к каталогу загруженных изображений товаров                              |
 
 ## Endpoints
 
