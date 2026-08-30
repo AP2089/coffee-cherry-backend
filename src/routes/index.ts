@@ -10,6 +10,8 @@ router.get('/health', controller.health)
 router.get('/coffees', controller.getCoffees)
 router.get('/coffees/:slug', controller.getCoffeeBySlug)
 router.post('/orders', controller.createOrder)
+router.post('/contacts', controller.createContactMessage)
+router.get('/contacts', requireAuth, controller.listContactMessages)
 router.get('/orders/:id', controller.getOrderById)
 router.patch('/orders/:id', controller.updateOrder)
 

@@ -2,7 +2,8 @@ import type { NextFunction, Request, Response } from 'express'
 import { isDatabaseConnected } from '../config/database'
 import * as coffeeService from '../services/coffee.service'
 import * as orderService from '../services/order.service'
-import type { CreateOrderPayload, UpdateOrderPayload } from '../types'
+import * as contactService from '../services/contact.service'
+import type { CreateContactMessagePayload, CreateOrderPayload, UpdateOrderPayload } from '../types'
 import { AppError } from '../middleware/errorHandler'
 
 export async function health(_req: Request, res: Response): Promise<void> {
@@ -81,6 +82,42 @@ export async function updateOrder(req: Request, res: Response, next: NextFunctio
     const payload = req.body as UpdateOrderPayload
     const order = await orderService.updateOrder(req.params.id, payload)
     res.json({ success: true, data: order })
+  } catch (error) {
+    next(error)
+  }
+}
+
+function parseQueryNumber(value: unknown): number | undefined {
+  if (typeof value !== 'string' || !value.trim()) return undefined
+  const parsed = Number.parseInt(value, 10)
+  return Number.isFinite(parsed) ? parsed : undefined
+}
+
+export async function createContactMessage(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> {
+  try {
+    const payload = req.body as CreateContactMessagePayload
+    const contactMessage = await contactService.createContactMessage(payload)
+    res.status(201).json({ success: true, data: contactMessage })
+  } catch (error) {
+    next(error)
+  }
+}
+
+export async function listContactMessages(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> {
+  try {
+    const messages = await contactService.listContactMessages({
+      limit: parseQueryNumber(req.query.limit),
+      offset: parseQueryNumber(req.query.offset),
+    })
+    res.json({ success: true, data: messages })
   } catch (error) {
     next(error)
   }

@@ -135,3 +135,20 @@ export interface CreateOrderPayload {
 export interface UpdateOrderPayload {
   status?: OrderStatus
 }
+
+export type ContactMessageStatus = 'new' | 'read' | 'archived'
+
+export interface IContactMessage {
+  name: string
+  email: string
+  message: string
+  status: ContactMessageStatus
+  createdAt?: Date
+  updatedAt?: Date
+}
+
+export interface CreateContactMessagePayload {
+  name: string
+  email: string
+  message: string
+}
