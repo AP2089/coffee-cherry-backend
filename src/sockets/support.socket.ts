@@ -8,6 +8,11 @@ import { verifyAuthToken } from '../utils/jwt'
 
 function resolveSocketCorsOrigin(): string | string[] | boolean {
   const origin = resolveCorsOrigin()
+
+  if (typeof origin === 'function') {
+    return true
+  }
+
   return origin
 }
 

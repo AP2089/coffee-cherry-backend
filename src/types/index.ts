@@ -74,6 +74,22 @@ export interface MessagesPageResult {
 
 export type CoffeeWeight = 250 | 500 | 1000
 
+export interface ICoffeeLocalizedContent {
+  name?: string
+  country: string
+  region: string
+  variety?: string
+  process: string
+  altitude?: string
+  description: string
+  story: string
+  flavorNotes: string[]
+}
+
+export interface ICoffeeTranslations {
+  en?: ICoffeeLocalizedContent
+}
+
 export interface ICoffee {
   name: string
   slug: string
@@ -90,6 +106,7 @@ export interface ICoffee {
   image: string
   gallery: string[]
   stock: number
+  translations?: ICoffeeTranslations
   createdAt?: Date
   updatedAt?: Date
 }
@@ -151,4 +168,45 @@ export interface CreateContactMessagePayload {
   name: string
   email: string
   message: string
+}
+
+export interface UpdateContactMessagePayload {
+  status?: ContactMessageStatus
+}
+
+export interface UpdateCoffeePayload {
+  name?: string
+  country?: string
+  region?: string
+  variety?: string
+  process?: string
+  altitude?: string
+  description?: string
+  story?: string
+  flavorNotes?: string[]
+  price?: number
+  stock?: number
+  weights?: CoffeeWeight[]
+  image?: string
+  gallery?: string[]
+  translations?: ICoffeeTranslations
+}
+
+export interface CreateCoffeePayload {
+  slug: string
+  name: string
+  country: string
+  region: string
+  variety: string
+  process: string
+  altitude: string
+  description: string
+  story: string
+  flavorNotes: string[]
+  price: number
+  weights: CoffeeWeight[]
+  image?: string
+  gallery?: string[]
+  stock?: number
+  translations?: ICoffeeTranslations
 }

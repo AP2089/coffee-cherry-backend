@@ -3,11 +3,14 @@ import cors from 'cors'
 import morgan from 'morgan'
 import { env } from './config/env'
 import { resolveCorsOrigin } from './config/cors'
+import { ensureUploadsDir, uploadsDir } from './config/uploads'
 import routes from './routes'
 import { errorHandler, notFoundHandler } from './middleware/errorHandler'
 
 export function createApp(): express.Application {
   const app = express()
+
+  ensureUploadsDir()
 
   app.use(cors({ origin: resolveCorsOrigin() }))
   app.use(express.json())
@@ -17,6 +20,7 @@ export function createApp(): express.Application {
     res.json({ name: 'coffee cherry api', version: '1.0.0' })
   })
 
+  app.use('/images', express.static(uploadsDir))
   app.use('/api', routes)
   app.use(notFoundHandler)
   app.use(errorHandler)

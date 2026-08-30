@@ -26,9 +26,13 @@ services:
       PORT: 3001
       MONGO_URI: mongodb://mongodb:27017/coffee_cherry
       NODE_ENV: production
-      CORS_ORIGIN: http://localhost:3000,http://localhost:3002
+      CORS_ORIGIN: http://localhost:3000,http://localhost:3002,http://localhost:3003,http://127.0.0.1:3000,http://127.0.0.1:3002,http://127.0.0.1:3003
+      CORS_RELAXED_LOCAL: 'true'
       JWT_SECRET: ${JWT_SECRET:-coffee-cherry-dev-secret}
       SUPPORT_AGENT_TOKEN: ${SUPPORT_AGENT_TOKEN:-}
+      UPLOADS_DIR: /app/uploads/images
+    volumes:
+      - ../frontend/public/images:/app/uploads/images
     depends_on:
       mongodb:
         condition: service_healthy

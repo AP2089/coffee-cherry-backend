@@ -32,9 +32,25 @@ const coffeeSchema = new Schema<CoffeeDocument>(
         message: 'Weights must be 250, 500 or 1000',
       },
     },
-    image: { type: String, required: true },
+    image: { type: String, default: '' },
     gallery: { type: [String], required: true, default: [] },
     stock: { type: Number, required: true, min: 0, default: 0 },
+    translations: {
+      type: {
+        en: {
+          name: { type: String, trim: true, default: '' },
+          country: { type: String, trim: true, default: '' },
+          region: { type: String, trim: true, default: '' },
+          variety: { type: String, trim: true, default: '' },
+          process: { type: String, trim: true, default: '' },
+          altitude: { type: String, trim: true, default: '' },
+          description: { type: String, trim: true, default: '' },
+          story: { type: String, trim: true, default: '' },
+          flavorNotes: { type: [String], default: [] },
+        },
+      },
+      default: undefined,
+    },
   },
   {
     timestamps: true,

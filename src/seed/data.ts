@@ -17,7 +17,7 @@ export const coffeesSeed: ICoffee[] = [
     price: 1890,
     weights: [250, 500, 1000],
     image: '/images/bloom.jpg',
-    gallery: ['/images/bloom.jpg', '/images/bloom-2.jpg', '/images/bloom-3.jpg'],
+    gallery: ['/images/bloom.jpg'],
     stock: 120,
   },
   {
@@ -36,7 +36,7 @@ export const coffeesSeed: ICoffee[] = [
     price: 1750,
     weights: [250, 500, 1000],
     image: '/images/velvet.jpg',
-    gallery: ['/images/velvet.jpg', '/images/velvet-2.jpg', '/images/velvet-3.jpg'],
+    gallery: ['/images/velvet.jpg'],
     stock: 140,
   },
   {
@@ -55,7 +55,7 @@ export const coffeesSeed: ICoffee[] = [
     price: 1590,
     weights: [250, 500, 1000],
     image: '/images/santos.jpg',
-    gallery: ['/images/santos.jpg', '/images/santos-2.jpg', '/images/santos-3.jpg'],
+    gallery: ['/images/santos.jpg'],
     stock: 160,
   },
   {
@@ -74,7 +74,7 @@ export const coffeesSeed: ICoffee[] = [
     price: 2100,
     weights: [250, 500, 1000],
     image: '/images/noir.jpg',
-    gallery: ['/images/noir.jpg', '/images/noir-2.jpg', '/images/noir-3.jpg'],
+    gallery: ['/images/noir.jpg'],
     stock: 90,
   },
   {
@@ -93,7 +93,7 @@ export const coffeesSeed: ICoffee[] = [
     price: 1820,
     weights: [250, 500, 1000],
     image: '/images/ember.jpg',
-    gallery: ['/images/ember.jpg', '/images/ember-2.jpg', '/images/ember-3.jpg'],
+    gallery: ['/images/ember.jpg'],
     stock: 110,
   },
 ]

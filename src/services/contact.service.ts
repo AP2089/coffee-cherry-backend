@@ -1,6 +1,12 @@
 import { ContactMessage } from '../models/ContactMessage'
 import { AppError } from '../middleware/errorHandler'
-import type { CreateContactMessagePayload, IContactMessage, PaginatedList } from '../types'
+import type {
+  ContactMessageStatus,
+  CreateContactMessagePayload,
+  IContactMessage,
+  PaginatedList,
+  UpdateContactMessagePayload,
+} from '../types'
 
 export type ContactMessageDTO = IContactMessage & { _id: string }
 
@@ -62,18 +68,67 @@ export async function createContactMessage(
 export async function listContactMessages(options?: {
   limit?: number
   offset?: number
+  status?: ContactMessageStatus
 }): Promise<PaginatedList<ContactMessageDTO>> {
   const limit = clampPageSize(options?.limit)
   const offset = Math.max(options?.offset ?? 0, 0)
+  const filter = options?.status ? { status: options.status } : {}
 
   const [items, total] = await Promise.all([
-    ContactMessage.find().sort({ createdAt: -1 }).skip(offset).limit(limit).lean().exec(),
-    ContactMessage.countDocuments().exec(),
+    ContactMessage.find(filter).sort({ createdAt: -1 }).skip(offset).limit(limit).lean().exec(),
+    ContactMessage.countDocuments(filter).exec(),
   ])
 
   return {
     items: items.map((item) => toContactMessageDTO(item)),
     total,
     hasMore: offset + items.length < total,
+  }
+}
+
+export async function getContactMessageById(id: string): Promise<ContactMessageDTO> {
+  const contactMessage = await ContactMessage.findById(id).lean().exec()
+
+  if (!contactMessage) {
+    throw new AppError('Contact message not found', 404)
+  }
+
+  return toContactMessageDTO(contactMessage)
+}
+
+export async function updateContactMessage(
+  id: string,
+  payload: UpdateContactMessagePayload,
+): Promise<ContactMessageDTO> {
+  const allowed: ContactMessageStatus[] = ['new', 'read', 'archived']
+
+  if (payload.status && !allowed.includes(payload.status)) {
+    throw new AppError('Invalid contact message status', 400)
+  }
+
+  if (!payload.status) {
+    throw new AppError('No fields to update', 400)
+  }
+
+  const contactMessage = await ContactMessage.findByIdAndUpdate(
+    id,
+    { $set: { status: payload.status } },
+    { new: true },
+  )
+    .lean()
+    .exec()
+
+  if (!contactMessage) {
+    throw new AppError('Contact message not found', 404)
+  }
+
+  return toContactMessageDTO(contactMessage)
+}
+
+export async function deleteContactMessage(id: string): Promise<void> {
+  const result = await ContactMessage.findByIdAndDelete(id).exec()
+
+  if (!result) {
+    throw new AppError('Contact message not found', 404)
   }
 }

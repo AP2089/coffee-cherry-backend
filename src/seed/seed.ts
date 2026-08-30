@@ -2,6 +2,7 @@ import { connectDatabase } from '../config/database'
 import { Coffee } from '../models/Coffee'
 import { User, hashPassword } from '../models/User'
 import { coffeesSeed } from './data'
+import { coffeeTranslationsSeed } from './translations'
 import { usersSeed } from './users'
 
 async function seed(): Promise<void> {
@@ -10,9 +11,17 @@ async function seed(): Promise<void> {
   let upserted = 0
 
   for (const coffee of coffeesSeed) {
+    const translation = coffeeTranslationsSeed.find((item) => item.slug === coffee.slug)
+    const enFields = translation ? (({ slug: _, ...rest }) => rest)(translation) : undefined
+
     await Coffee.findOneAndUpdate(
       { slug: coffee.slug },
-      { $set: coffee },
+      {
+        $set: {
+          ...coffee,
+          translations: translation ? { en: enFields } : undefined,
+        },
+      },
       { upsert: true, new: true, setDefaultsOnInsert: true },
     )
     upserted += 1

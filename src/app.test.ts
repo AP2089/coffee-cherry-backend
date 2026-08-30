@@ -23,4 +23,10 @@ describe('HTTP app', () => {
 
     expect(response.status).toBe(401)
   })
+
+  it('POST /api/uploads requires auth', async () => {
+    const response = await request(app).post('/api/uploads')
+
+    expect(response.status).toBe(401)
+  })
 })
