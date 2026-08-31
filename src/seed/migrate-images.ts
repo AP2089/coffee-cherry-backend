@@ -6,7 +6,7 @@ import { Coffee } from '../models/Coffee'
 
 const IMAGE_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.webp'] as const
 
-function copyMainImageIfNeeded(sourceDir: string, slug: string, imagePath: string): void {
+function copyMainImageIfNeeded(sourceDir: string, imagePath: string): void {
   if (path.resolve(sourceDir) === path.resolve(uploadsDir)) {
     return
   }
@@ -77,7 +77,7 @@ async function migrateImages(): Promise<void> {
       continue
     }
 
-    copyMainImageIfNeeded(imagesDir, coffee.slug, imagePath)
+    copyMainImageIfNeeded(imagesDir, imagePath)
 
     if (
       coffee.image === imagePath &&

@@ -1,7 +1,6 @@
 services:
   mongodb:
     image: mongo:7
-    container_name: coffee-cherry-mongodb
     restart: unless-stopped
     ports:
       - '27017:27017'
@@ -15,19 +14,16 @@ services:
       start_period: 20s
 
   backend:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    container_name: coffee-cherry-backend
+    build: .
     restart: unless-stopped
     ports:
-      - '3001:3001'
+      - '${PORT}:${PORT}'
     environment:
-      PORT: 3001
-      MONGO_URI: mongodb://mongodb:27017/coffee_cherry
-      NODE_ENV: production
-      CORS_ORIGIN: http://localhost:3000,http://localhost:3002,http://localhost:3003,http://127.0.0.1:3000,http://127.0.0.1:3002,http://127.0.0.1:3003
-      CORS_RELAXED_LOCAL: 'true'
+      PORT: ${PORT}
+      MONGO_URI: ${DOCKER_MONGO_URI}
+      NODE_ENV: ${NODE_ENV}
+      CORS_ORIGIN: ${CORS_ORIGIN}
+      CORS_RELAXED_LOCAL: ${CORS_RELAXED_LOCAL}
       JWT_SECRET: ${JWT_SECRET:-coffee-cherry-dev-secret}
       SUPPORT_AGENT_TOKEN: ${SUPPORT_AGENT_TOKEN:-}
       UPLOADS_DIR: /app/uploads/images
@@ -36,18 +32,6 @@ services:
     depends_on:
       mongodb:
         condition: service_healthy
-    healthcheck:
-      test:
-        [
-          'CMD',
-          'node',
-          '-e',
-          "fetch('http://127.0.0.1:3001/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))",
-        ]
-      interval: 15s
-      timeout: 5s
-      retries: 10
-      start_period: 25s
 
 volumes:
   mongodb_data:
