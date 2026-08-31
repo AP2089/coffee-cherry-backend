@@ -9,12 +9,6 @@ docker compose up -d --build
 docker compose exec backend npm run seed
 ```
 
-Dev-режим с hot reload:
-
-```bash
-docker compose -f docker-compose.dev.yml up --build
-```
-
 API: http://localhost:3001  
 Health: http://localhost:3001/api/health
 
@@ -34,14 +28,15 @@ npm run dev
 
 | Переменная            | Описание                                                                     |
 | --------------------- | ---------------------------------------------------------------------------- |
-| `PORT`                | Порт HTTP-сервера API (по умолчанию `3001`)                                  |
-| `MONGO_URI`           | Строка подключения к MongoDB                                                 |
+| `PORT`                | Порт HTTP-сервера API                                                        |
+| `MONGO_URI`           | MongoDB для локального запуска без Docker                                    |
+| `DOCKER_MONGO_URI`    | MongoDB внутри Docker Compose                                                |
 | `NODE_ENV`            | Режим работы: `development` или `production`                                 |
-| `CORS_ORIGIN`         | Разрешённые origins фронтенда, CRM и helpdesk (через запятую)                |
-| `CORS_RELAXED_LOCAL`  | Разрешить локальные origins (`localhost`, `127.0.0.1`) при `true`            |
-| `JWT_SECRET`          | Секрет для подписи JWT-токенов авторизации                                   |
-| `SUPPORT_AGENT_TOKEN` | Токен для подключения операторов helpdesk к Socket.IO (пусто — без проверки) |
-| `UPLOADS_DIR`         | Путь к каталогу загруженных изображений товаров                              |
+| `CORS_ORIGIN`         | Разрешённые origins frontend, CRM и helpdesk через запятую                   |
+| `CORS_RELAXED_LOCAL`  | Разрешить локальные origins при `true`; на production должно быть `false`    |
+| `JWT_SECRET`          | Секрет подписи JWT; на production обязательно заменить                       |
+| `SUPPORT_AGENT_TOKEN` | Дополнительный токен оператора Socket.IO; пустое значение отключает проверку |
+| `UPLOADS_DIR`         | Каталог изображений при локальном запуске                                    |
 
 ## Endpoints
 
@@ -60,3 +55,6 @@ npm run dev
 - `npm run build` / `npm start` — production
 - `npm run seed` — seed после build
 - `npm run seed:dev` — seed в dev
+- `npm run migrate:images` — перенос изображений
+- `npm test` — тесты
+- `npm run lint` — ESLint
