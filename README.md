@@ -9,6 +9,8 @@ docker compose up -d --build
 docker compose exec backend npm run seed
 ```
 
+Docker Compose использует MongoDB 4.4 для совместимости с VPS без AVX.
+
 API: http://localhost:3001  
 Health: http://localhost:3001/api/health
 
