@@ -11,12 +11,13 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  ci:
+  ci-cd:
+    name: CI/CD
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v5
         with:
           node-version: 22
           cache: npm
@@ -28,46 +29,68 @@ jobs:
       - run: npm test
       - run: npm run build
 
-  deploy-dev:
-    needs: ci
+  development:
+    needs: ci-cd
     if: github.event_name == 'push' && github.ref == 'refs/heads/development'
     runs-on: ubuntu-latest
     environment: development
     steps:
+      - uses: actions/checkout@v5
+
+      - name: Upload backend to dev VPS
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          password: ${{ secrets.VPS_PASSWORD }}
+          port: 22
+          source: '.'
+          target: /opt/coffee-cherry/development/backend
+          overwrite: true
+
       - name: Deploy backend to dev VPS
         uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           password: ${{ secrets.VPS_PASSWORD }}
-          port: ${{ secrets.VPS_PORT || 22 }}
+          port: 22
+          command_timeout: 30m
           script: |
             set -e
-            cd /opt/coffee-cherry/development/backend
-            git fetch origin
-            git reset --hard origin/development
             cd /opt/coffee-cherry/development
             docker compose up -d --build backend
             docker compose ps backend
 
-  deploy-prod:
-    needs: ci
+  production:
+    needs: ci-cd
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     environment: production
     steps:
+      - uses: actions/checkout@v5
+
+      - name: Upload backend to prod VPS
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          password: ${{ secrets.VPS_PASSWORD }}
+          port: 22
+          source: '.'
+          target: /opt/coffee-cherry/production/backend
+          overwrite: true
+
       - name: Deploy backend to prod VPS
         uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           password: ${{ secrets.VPS_PASSWORD }}
-          port: ${{ secrets.VPS_PORT || 22 }}
+          port: 22
+          command_timeout: 30m
           script: |
             set -e
-            cd /opt/coffee-cherry/production/backend
-            git fetch origin
-            git reset --hard origin/main
             cd /opt/coffee-cherry/production
             docker compose up -d --build backend
             curl -fsS https://coffee-cherry.proskurin.site/api/health
