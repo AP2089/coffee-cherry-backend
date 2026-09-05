@@ -1,10 +1,6 @@
 name: Deploy
 
 on:
-  push:
-    branches: [main, development]
-  pull_request:
-    branches: [main, development]
   workflow_dispatch:
     inputs:
       environment:
@@ -16,12 +12,12 @@ on:
           - production
 
 concurrency:
-  group: deploy-${{ github.workflow }}-${{ github.ref }}-${{ github.event.inputs.environment || github.event_name }}
+  group: cicd-${{ github.workflow }}-${{ github.ref }}-${{ inputs.environment }}
   cancel-in-progress: true
 
 jobs:
-  ci-cd:
-    name: CI/CD
+  ci:
+    name: CI
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
@@ -38,15 +34,15 @@ jobs:
       - run: npm test
       - run: npm run build
 
-  development:
-    needs: ci-cd
-    if: github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'development'
+  cd:
+    name: CD
+    needs: ci
     runs-on: ubuntu-latest
-    environment: development
+    environment: ${{ inputs.environment }}
     steps:
       - uses: actions/checkout@v5
 
-      - name: Upload backend to dev VPS
+      - name: Upload backend to VPS
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.VPS_HOST }}
@@ -54,10 +50,10 @@ jobs:
           password: ${{ secrets.VPS_PASSWORD }}
           port: 22
           source: '.'
-          target: /opt/coffee-cherry/development/backend
+          target: /opt/coffee-cherry/${{ inputs.environment }}/backend
           overwrite: true
 
-      - name: Deploy backend to dev VPS
+      - name: Deploy backend to VPS
         uses: appleboy/ssh-action@v1.2.0
         with:
           host: ${{ secrets.VPS_HOST }}
@@ -67,40 +63,9 @@ jobs:
           command_timeout: 30m
           script: |
             set -e
-            cd /opt/coffee-cherry/development
+            cd /opt/coffee-cherry/${{ inputs.environment }}
             docker compose up -d --build backend
-            docker compose ps backend
-
-  production:
-    needs: ci-cd
-    if: github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'production'
-    runs-on: ubuntu-latest
-    environment: production
-    steps:
-      - uses: actions/checkout@v5
-
-      - name: Upload backend to prod VPS
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
-          password: ${{ secrets.VPS_PASSWORD }}
-          port: 22
-          source: '.'
-          target: /opt/coffee-cherry/production/backend
-          overwrite: true
-
-      - name: Deploy backend to prod VPS
-        uses: appleboy/ssh-action@v1.2.0
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
-          password: ${{ secrets.VPS_PASSWORD }}
-          port: 22
-          command_timeout: 30m
-          script: |
-            set -e
-            cd /opt/coffee-cherry/production
-            docker compose up -d --build backend
-            curl -fsS https://coffee-cherry.proskurin.site/api/health
+            if [ "${{ inputs.environment }}" = "production" ]; then
+              curl -fsS https://coffee-cherry.proskurin.site/api/health
+            fi
             docker compose ps backend
