@@ -40,3 +40,18 @@ export function requireAdmin(req: Request, _res: Response, next: NextFunction): 
 
   next()
 }
+
+/** Guest account is read-only in CRM / Helpdesk. */
+export function forbidGuest(req: Request, _res: Response, next: NextFunction): void {
+  if (!req.auth) {
+    next(new AppError('Unauthorized', 401))
+    return
+  }
+
+  if (req.auth.role === UserRole.Guest || req.auth.username === 'guest') {
+    next(new AppError('У вас нет прав для редактирования', 403))
+    return
+  }
+
+  next()
+}
