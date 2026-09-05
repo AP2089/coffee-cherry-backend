@@ -147,6 +147,7 @@ export function initSupportSocket(httpServer: HttpServer): Server {
 
       socket.data.role = 'agent'
       socket.data.username = agent.username
+      socket.data.userRole = agent.role
       void socket.join('support-agents')
       socket.emit('support:agent:joined', agent)
     })
@@ -197,6 +198,11 @@ export function initSupportSocket(httpServer: HttpServer): Server {
     socket.on('support:agent:reply', async (payload: { sessionId?: string; text?: string }) => {
       if (socket.data.role !== 'agent') {
         socket.emit('support:error', { message: 'Unauthorized agent' })
+        return
+      }
+
+      if (socket.data.userRole === UserRole.Guest || socket.data.username === 'guest') {
+        socket.emit('support:error', { message: 'У вас нет прав для редактирования' })
         return
       }
 

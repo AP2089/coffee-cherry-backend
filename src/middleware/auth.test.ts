@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import type { NextFunction, Request, Response } from 'express'
-import { requireAdmin, requireAuth } from './auth'
+import { forbidGuest, requireAdmin, requireAuth } from './auth'
 import { AppError } from './errorHandler'
 import { UserRole } from '../types'
 import * as jwt from '../utils/jwt'
@@ -62,6 +62,57 @@ describe('auth middleware', () => {
     const next = vi.fn()
 
     requireAdmin(req, {} as Response, next as NextFunction)
+
+    expect(next).toHaveBeenCalledWith()
+  })
+
+  it('forbidGuest rejects guest role', () => {
+    const req = {
+      auth: {
+        sub: '3',
+        username: 'guest',
+        role: UserRole.Guest,
+        exp: Date.now() + 1000,
+      },
+    } as Request
+    const next = vi.fn()
+
+    forbidGuest(req, {} as Response, next as NextFunction)
+
+    expect(next).toHaveBeenCalledWith(expect.any(AppError))
+    expect((next.mock.calls[0][0] as AppError).statusCode).toBe(403)
+    expect((next.mock.calls[0][0] as AppError).message).toBe('У вас нет прав для редактирования')
+  })
+
+  it('forbidGuest rejects guest username even with manager role', () => {
+    const req = {
+      auth: {
+        sub: '3',
+        username: 'guest',
+        role: UserRole.Manager,
+        exp: Date.now() + 1000,
+      },
+    } as Request
+    const next = vi.fn()
+
+    forbidGuest(req, {} as Response, next as NextFunction)
+
+    expect(next).toHaveBeenCalledWith(expect.any(AppError))
+    expect((next.mock.calls[0][0] as AppError).statusCode).toBe(403)
+  })
+
+  it('forbidGuest passes for non-guest users', () => {
+    const req = {
+      auth: {
+        sub: '2',
+        username: 'manager',
+        role: UserRole.Manager,
+        exp: Date.now() + 1000,
+      },
+    } as Request
+    const next = vi.fn()
+
+    forbidGuest(req, {} as Response, next as NextFunction)
 
     expect(next).toHaveBeenCalledWith()
   })

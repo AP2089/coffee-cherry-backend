@@ -3,6 +3,7 @@ export type ChatSender = 'user' | 'agent'
 export enum UserRole {
   Admin = 'admin',
   Manager = 'manager',
+  Guest = 'guest',
 }
 
 export interface UserSeedEntry {
