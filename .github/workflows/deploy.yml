@@ -5,9 +5,18 @@ on:
     branches: [main, development]
   pull_request:
     branches: [main, development]
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: Target environment
+        required: true
+        type: choice
+        options:
+          - development
+          - production
 
 concurrency:
-  group: deploy-${{ github.workflow }}-${{ github.ref }}
+  group: deploy-${{ github.workflow }}-${{ github.ref }}-${{ github.event.inputs.environment || github.event_name }}
   cancel-in-progress: true
 
 jobs:
@@ -31,7 +40,7 @@ jobs:
 
   development:
     needs: ci-cd
-    if: github.event_name == 'push' && github.ref == 'refs/heads/development'
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'development'
     runs-on: ubuntu-latest
     environment: development
     steps:
@@ -64,7 +73,7 @@ jobs:
 
   production:
     needs: ci-cd
-    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    if: github.event_name == 'workflow_dispatch' && github.event.inputs.environment == 'production'
     runs-on: ubuntu-latest
     environment: production
     steps:
