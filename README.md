@@ -1,5 +1,7 @@
 # Coffee Cherry Backend
 
+Storefront API (каталог, заказы, контакты).
+
 ## Переменные окружения
 
 - `PORT` — порт API, по умолчанию `3001`.
@@ -7,9 +9,7 @@
 - `NODE_ENV` — режим запуска.
 - `CORS_ORIGIN` — разрешённые origins через запятую.
 - `CORS_RELAXED_LOCAL` — разрешить локальные origins.
-- `JWT_SECRET` — секрет JWT.
-- `SUPPORT_AGENT_TOKEN` — токен оператора поддержки.
-- `UPLOADS_DIR` — каталог загружаемых изображений.
+- `UPLOADS_DIR` — каталог статических изображений (read).
 
 ## Scripts
 

@@ -1,5 +1,4 @@
 import type { NextFunction, Request, Response } from 'express'
-import multer from 'multer'
 
 export class AppError extends Error {
   statusCode: number
@@ -25,15 +24,6 @@ export function errorHandler(
     res.status(err.statusCode).json({
       success: false,
       message: err.message,
-    })
-    return
-  }
-
-  if (err instanceof multer.MulterError) {
-    const message = err.code === 'LIMIT_FILE_SIZE' ? 'Image is too large (max 100 MB)' : err.message
-    res.status(400).json({
-      success: false,
-      message,
     })
     return
   }
