@@ -40,19 +40,24 @@ jobs:
     needs: ci
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment }}
+    permissions:
+      contents: read
     steps:
       - name: Deploy backend to VPS
         uses: appleboy/ssh-action@v1.2.0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           password: ${{ secrets.VPS_PASSWORD }}
           port: 22
           command_timeout: 30m
+          envs: GITHUB_TOKEN
           script: |
             set -e
             cd /opt/coffee-cherry/${{ inputs.environment }}
-            git -C backend pull
+            git -C backend pull "https://x-access-token:${GITHUB_TOKEN}@github.com/AP2089/coffee-cherry-backend.git" ${{ inputs.environment == 'production' && 'main' || 'development' }}
             git -C backend clean -fd
             docker compose up -d --build backend
             docker compose ps backend
