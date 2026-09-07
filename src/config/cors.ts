@@ -1,7 +1,7 @@
 import { env } from './env'
 
 const LOCAL_FRONTEND_ORIGIN =
-  /^https?:\/\/(localhost|127\.0\.0\.1|192\.168\.\d{1,3}\.\d{1,3}|10\.\d{1,3}\.\d{1,3}\.\d{1,3})(:3000|:3002|:3003)?$/
+  /^https?:\/\/(localhost|127\.0\.0\.1|192\.168\.\d{1,3}\.\d{1,3}|10\.\d{1,3}\.\d{1,3}\.\d{1,3})(:3000)?$/
 
 export function resolveCorsOrigin():
   | boolean
