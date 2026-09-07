@@ -40,8 +40,6 @@ jobs:
     needs: ci
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment }}
-    permissions:
-      contents: read
     steps:
       - name: Deploy backend to VPS
         uses: appleboy/ssh-action@v1.2.0
@@ -54,10 +52,12 @@ jobs:
           script: |
             set -e
             cd /opt/coffee-cherry/${{ inputs.environment }}/backend
-            git remote set-url origin https://github.com/AP2089/coffee-cherry-backend.git
-            git -c http.extraheader="AUTHORIZATION: bearer ${{ secrets.GITHUB_TOKEN }}" fetch --depth=1 origin ${{ inputs.environment == 'production' && 'main' || 'development' }}
-            git reset --hard FETCH_HEAD
-            git clean -fd
+            git fetch origin
+            if [ "${{ inputs.environment }}" = "production" ]; then
+              git reset --hard origin/main
+            else
+              git reset --hard origin/development
+            fi
             cd /opt/coffee-cherry/${{ inputs.environment }}
             docker compose up -d --build backend
             docker compose ps backend
