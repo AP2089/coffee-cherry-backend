@@ -53,5 +53,6 @@ jobs:
             set -e
             cd /opt/coffee-cherry/${{ inputs.environment }}
             git -C backend pull
+            git -C backend clean -fd
             docker compose up -d --build backend
             docker compose ps backend
