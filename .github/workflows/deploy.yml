@@ -41,21 +41,6 @@ jobs:
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment }}
     steps:
-      - uses: actions/checkout@v5
-        with:
-          ref: ${{ inputs.environment == 'production' && 'main' || 'development' }}
-
-      - name: Upload backend to VPS
-        uses: appleboy/scp-action@v0.1.7
-        with:
-          host: ${{ secrets.VPS_HOST }}
-          username: ${{ secrets.VPS_USER }}
-          password: ${{ secrets.VPS_PASSWORD }}
-          port: 22
-          source: '.'
-          target: /opt/coffee-cherry/${{ inputs.environment }}/backend
-          overwrite: true
-
       - name: Deploy backend to VPS
         uses: appleboy/ssh-action@v1.2.0
         with:
@@ -67,8 +52,7 @@ jobs:
           script: |
             set -e
             cd /opt/coffee-cherry/${{ inputs.environment }}
+            git -C backend pull
+            git -C backend clean -fd
             docker compose up -d --build backend
-            if [ "${{ inputs.environment }}" = "production" ]; then
-              curl -fsS https://coffee-cherry.proskurin.site/api/health
-            fi
             docker compose ps backend
