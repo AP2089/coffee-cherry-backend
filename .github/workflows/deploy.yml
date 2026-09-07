@@ -45,19 +45,19 @@ jobs:
     steps:
       - name: Deploy backend to VPS
         uses: appleboy/ssh-action@v1.2.0
-        env:
-          TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           password: ${{ secrets.VPS_PASSWORD }}
           port: 22
           command_timeout: 30m
-          envs: TOKEN
           script: |
             set -e
+            cd /opt/coffee-cherry/${{ inputs.environment }}/backend
+            git remote set-url origin https://github.com/AP2089/coffee-cherry-backend.git
+            git -c http.extraheader="AUTHORIZATION: bearer ${{ secrets.GITHUB_TOKEN }}" fetch --depth=1 origin ${{ inputs.environment == 'production' && 'main' || 'development' }}
+            git reset --hard FETCH_HEAD
+            git clean -fd
             cd /opt/coffee-cherry/${{ inputs.environment }}
-            git -C backend pull "https://x-access-token:${TOKEN}@github.com/AP2089/coffee-cherry-backend.git" ${{ inputs.environment == 'production' && 'main' || 'development' }}
-            git -C backend clean -fd
             docker compose up -d --build backend
             docker compose ps backend
