@@ -12,7 +12,13 @@ export function createApp(): express.Application {
 
   ensureUploadsDir()
 
-  app.use(cors({ origin: resolveCorsOrigin() }))
+  app.use(
+    cors({
+      origin: resolveCorsOrigin(),
+      methods: ['GET', 'HEAD', 'PUT', 'PATCH', 'POST', 'DELETE', 'OPTIONS'],
+      allowedHeaders: ['Content-Type', 'Authorization'],
+    }),
+  )
   app.use(express.json())
   app.use(morgan(env.nodeEnv === 'production' ? 'combined' : 'dev'))
 
