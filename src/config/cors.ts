@@ -1,13 +1,12 @@
 import { env } from './env'
 
 const LOCAL_FRONTEND_ORIGIN =
-  /^https?:\/\/(localhost|127\.0\.0\.1|192\.168\.\d{1,3}\.\d{1,3}|10\.\d{1,3}\.\d{1,3}\.\d{1,3})(:3000)?$/
+  /^https?:\/\/(localhost|127\.0\.0\.1|192\.168\.\d{1,3}\.\d{1,3}|10\.\d{1,3}\.\d{1,3}\.\d{1,3})(:\d+)?$/
+
+type CorsCallback = (err: Error | null, allow?: boolean) => void
 
 export function resolveCorsOrigin():
-  | boolean
-  | string
-  | string[]
-  | ((origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => void) {
+  boolean | string | string[] | ((origin: string | undefined, callback: CorsCallback) => void) {
   if (env.corsOrigin === '*') return true
 
   const origins = env.corsOrigin
@@ -15,18 +14,23 @@ export function resolveCorsOrigin():
     .map((origin) => origin.trim())
     .filter(Boolean)
 
-  if (env.corsRelaxedLocal) {
-    return (origin, callback) => {
-      if (!origin || origins.includes(origin) || LOCAL_FRONTEND_ORIGIN.test(origin)) {
-        callback(null, true)
-        return
-      }
-
-      callback(new Error('Not allowed by CORS'))
+  return (origin, callback) => {
+    if (!origin) {
+      callback(null, true)
+      return
     }
+
+    if (origins.includes(origin)) {
+      callback(null, true)
+      return
+    }
+
+    if (env.corsRelaxedLocal && LOCAL_FRONTEND_ORIGIN.test(origin)) {
+      callback(null, true)
+      return
+    }
+
+    // false — корректный отказ CORS без 500 на preflight
+    callback(null, false)
   }
-
-  if (origins.length === 1) return origins[0]
-
-  return origins
 }
